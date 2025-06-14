@@ -19,6 +19,11 @@ app.use("/api/report", reportRoutes);  // POST /api/report/upload-report
 app.use("/uploads", express.static("uploads")); // serve uploaded files
 
 const PORT = process.env.PORT || 5000;
+
+app.get('/', (req, res) => {
+  res.send('🎉 Healbot backend is live and running!');
+});
+
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
 });

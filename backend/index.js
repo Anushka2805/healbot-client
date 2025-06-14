@@ -8,7 +8,10 @@ const reportRoutes = require('./routes/reportRoutes'); // ✅ now working
 
 const app = express();
 
-app.use(cors({ origin: 'http://localhost:3000' }));
+app.use(cors({
+  origin: ['http://localhost:3000', 'https://healbot-frontend.vercel.app'], // 👈 Add your Vercel URL here
+  credentials: true
+}));
 app.use(express.json());
 connectDB();
 

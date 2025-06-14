@@ -8,7 +8,7 @@ const FileUpload = () => {
     formData.append('report', file);
 
     // 👇 Backend URL yaha set hoga — abhi backend bana nahi hai
-    const res = await fetch("http://localhost:5000/upload", {
+    const res = await fetch("https://healbot-client.onrender.com/api/report/upload-report", {
       method: 'POST',
       body: formData
     });

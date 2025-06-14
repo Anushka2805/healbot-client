@@ -13,7 +13,7 @@ const ChatHistory = () => {
 
   const fetchHistory = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/chat/history");
+      const res = await axios.get("https://healbot-client.onrender.com/api/chat/history");
       setHistory(res.data);
     } catch (err) {
       console.error("Error fetching history:", err);
@@ -22,7 +22,7 @@ const ChatHistory = () => {
 
   const clearHistory = async () => {
     try {
-      await axios.delete("http://localhost:5000/api/chat/history");
+      await axios.delete("https://healbot-client.onrender.com/api/chat/history");
       setHistory([]); // Clear UI also
     } catch (err) {
       console.error("Error deleting history:", err);

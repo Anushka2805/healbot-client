@@ -11,7 +11,7 @@ const ChatForm = () => {
     if (!message) return;
 
     try {
-      const res = await axios.post("http://localhost:5000/api/chat/chat", {
+      const res = await axios.post("https://healbot-client.onrender.com/api/chat/chat", {
         message,
         duration
       });

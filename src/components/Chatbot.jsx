@@ -27,7 +27,7 @@ const Chatbot = () => {
     } else {
       // Step 2: Send message + duration to backend
       try {
-        const res = await axios.post("http://localhost:5000/api/chat", {
+        const res = await axios.post("https://healbot-client.onrender.com/api/chat", {
           message: pendingSymptom,
           duration: trimmedInput,
         });

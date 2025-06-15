@@ -1,33 +1,35 @@
 const Chat = require("../models/Chat");
 
+// ---------------------------
+// Handle Chat Route
+// ---------------------------
 const handleChat = async (req, res) => {
   const { message, duration } = req.body;
 
   try {
-    // Step 1: Define symptom-specific remedies and precautions
     const symptomMap = {
       cough: {
         remedy: "Drink warm fluids and rest your throat.",
-        precaution: "Avoid cold and dusty environments."
+        precaution: "Avoid cold and dusty environments.",
       },
       fever: {
         remedy: "Take paracetamol and stay hydrated.",
-        precaution: "Monitor temperature regularly."
+        precaution: "Monitor temperature regularly.",
       },
       headache: {
         remedy: "Lie down in a dark room and avoid screens.",
-        precaution: "Avoid stress and drink enough water."
+        precaution: "Avoid stress and drink enough water.",
       },
       cold: {
         remedy: "Use steam inhalation and stay warm.",
-        precaution: "Avoid cold drinks and sudden temperature changes."
-      }
+        precaution: "Avoid cold drinks and sudden temperature changes.",
+      },
     };
 
     const matchedSymptom = message.toLowerCase().trim();
     const data = symptomMap[matchedSymptom] || {
       remedy: "Take rest and stay hydrated.",
-      precaution: "Avoid cold drinks."
+      precaution: "Avoid cold drinks.",
     };
 
     let remedy = data.remedy;
@@ -35,8 +37,26 @@ const handleChat = async (req, res) => {
     let adviseDoctor = false;
     let personalizedMessage = "";
 
-    // Step 2: Check past records for this symptom
-    const previousRecords = await Chat.find({ "botResponse.symptom": matchedSymptom });
+    // Save temp chat entry first
+    const tempChat = new Chat({
+      userMessage: message,
+      duration,
+      botResponse: {
+        remedy,
+        precaution,
+        adviseDoctor: false,
+        symptom: matchedSymptom,
+        note: "Evaluating...",
+      },
+    });
+
+    await tempChat.save();
+
+    // Check past occurrences (excluding the one just saved)
+    const previousRecords = await Chat.find({
+      "botResponse.symptom": matchedSymptom,
+      _id: { $ne: tempChat._id },
+    });
 
     if (previousRecords.length >= 2) {
       personalizedMessage = "This symptom has occurred multiple times. Please monitor closely.";
@@ -48,7 +68,8 @@ const handleChat = async (req, res) => {
       personalizedMessage = "Looks like a minor issue. Take care!";
     }
 
-    const response = {
+    // Update the temp chat entry with final response
+    tempChat.botResponse = {
       remedy,
       precaution,
       adviseDoctor,
@@ -56,25 +77,21 @@ const handleChat = async (req, res) => {
       note: personalizedMessage,
     };
 
-  const newChat = new Chat({
-  userMessage: message,
-  duration: duration, // <-- add this
-  botResponse: response,
-});
-  
+    await tempChat.save();
 
-    await newChat.save();
-    res.json(response);
+    res.json(tempChat.botResponse);
   } catch (error) {
     console.error("Error in handleChat:", error);
     res.status(500).json({ message: "Internal Server Error" });
   }
 };
 
-
+// ---------------------------
+// Get Doctor Summary
+// ---------------------------
 const getSummaryForDoctor = async (req, res) => {
   try {
-    const allChats = await Chat.find().sort({ createdAt: -1 }).limit(10);
+    const allChats = await Chat.find().sort({ createdAt: -1 }).limit(20);
 
     const criticalChats = allChats.filter(chat => chat.botResponse.adviseDoctor === true);
 
@@ -96,7 +113,9 @@ const getSummaryForDoctor = async (req, res) => {
   }
 };
 
-// Get all chat history
+// ---------------------------
+// Get Chat History
+// ---------------------------
 const getChatHistory = async (req, res) => {
   try {
     const history = await Chat.find().sort({ createdAt: -1 });
@@ -107,6 +126,9 @@ const getChatHistory = async (req, res) => {
   }
 };
 
+// ---------------------------
+// Clear Chat History
+// ---------------------------
 const deleteChatHistory = async (req, res) => {
   try {
     await Chat.deleteMany({});
@@ -116,7 +138,6 @@ const deleteChatHistory = async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 };
-
 
 module.exports = {
   handleChat,
